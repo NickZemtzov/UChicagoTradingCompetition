@@ -266,42 +266,68 @@ class PositionTrackerBot(UTCBot):
 
 
     async def update_rorusd_6r_high(self):
+        # trading on 6RH for now. How far out do we want to trade?
+        print("\ncalculating orders HIGH")
         if 'USD' not in self.mkt_interest_rates or 'ROR' not in self.mkt_interest_rates:
+            print("usd/ror not given. returning...")
             return
 
         # 6R / RORUSD
         fair_ratio = (1 + self.mkt_interest_rates['USD']) / (1 + self.mkt_interest_rates['ROR'])
+        print("  fair ratio",fair_ratio)
 
-        if '6R' not in self.mkt_asks or 'RORUSD' not in self.mkt_bids:
+        #print(self.mkt_asks.keys(), self.mkt_bids.keys())
+        if '6RH' not in self.mkt_asks or 'RORUSD' not in self.mkt_bids:
+            print("6r/rorusd  not given. returning...")
             return
-        bid_6r = self.mkt_bids['6R']
-        ask_rorusd = self.mkt_asks['RORUSD']
+
+        bid_6r_all = self.mkt_bids['6RH']
+        ask_rorusd_all = self.mkt_asks['RORUSD']
+
+        if len(bid_6r_all) == 0 or len(ask_rorusd_all) == 0:
+            print("bid or ask queue empty. returning...")
+            return
+
+        bid_6r = bid_6r_all[0] # choose closest to center of bid-ask spread
+        ask_rorusd = ask_rorusd_all[0]
         if bid_6r is None or ask_rorusd is None:
+            print("is none. returning...")
             return
 
-        actual_ratio = bid_6r / ask_rorusd
+
+        actual_ratio = bid_6r[0] / ask_rorusd[0]
+        print("  actual_ratio",actual_ratio)
         if actual_ratio > fair_ratio:
-            await self.place_asks('6R', ask_rorusd * fair_ratio)
-            await self.place_bids('RORUSD', bid_6r / fair_ratio)
+            print("placing asks",bid_6r[0] / fair_ratio)
+            await self.place_asks('6RH', ask_rorusd[0] * fair_ratio)
 
     async def update_rorusd_6r_low(self):
+        print("\ncalculating orders LOW")
         if 'USD' not in self.mkt_interest_rates or 'ROR' not in self.mkt_interest_rates:
             return
 
         # 6R / RORUSD
         fair_ratio = (1 + self.mkt_interest_rates['USD']) / (1 + self.mkt_interest_rates['ROR'])
 
-        if '6R' not in self.mkt_asks or 'RORUSD' not in self.mkt_bids:
-            return
-        ask_6r = self.mkt_asks['6R']
-        bid_rorusd = self.mkt_bids['RORUSD']
-        if ask_6r is None or bid_rorusd is None:
+        if '6RH' not in self.mkt_asks or 'RORUSD' not in self.mkt_bids:
+            print("6r/rorusd  not given. returning...")
             return
 
-        actual_ratio = ask_6r / bid_rorusd
+        ask_6r_all = self.mkt_asks['6RH']
+        bid_rorusd_all = self.mkt_bids['RORUSD']
+
+        if len(bid_rorusd_all) == 0 or len(ask_6r_all) == 0:
+            print("bid or ask queue empty. returning...")
+            return
+
+        ask_6r = ask_6r_all[0]
+        bid_rorusd = bid_rorusd_all[0]
+
+        actual_ratio = ask_6r[0] / bid_rorusd[0]
+        print("  actual_ratio",actual_ratio)
         if actual_ratio < fair_ratio:
-            await self.place_bids('6R', bid_rorusd * fair_ratio)
-            await self.place_asks('RORUSD', ask_6r / fair_ratio)
+            print("placing asks",bid_rorusd[0] / fair_ratio)
+            await self.place_bids('6RH', bid_rorusd[0] * fair_ratio)
 
     async def handle_exchange_update(self, update: pb.FeedMessage):
         kind, value = betterproto.which_one_of(update, "msg")
