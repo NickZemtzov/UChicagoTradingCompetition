@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "utc"
+version = "0.1.0"
+description = ""
+authors = ["Kye Shi <shi.kye@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+betterproto = "^1.2.5"
+matplotlib = "^3.4.1"
+numpy = "^1.20.2"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

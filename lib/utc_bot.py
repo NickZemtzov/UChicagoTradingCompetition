@@ -16,7 +16,7 @@ import betterproto
 from grpclib.client import Channel
 from grpclib.exceptions import StreamTerminatedError
 
-import proto.utc_bot as pb
+import lib.proto.utc_bot as pb
 
 
 class XChangeWarning(Warning):
